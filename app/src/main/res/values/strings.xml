@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">MyFin</string>
+    <string name="transaction">Transaksi</string>
+    <string name="amount">Nilai</string>
+    <string name="type">Tipe</string>
+    <string name="source">Sumber</string>
+    <string name="date">Tanggal</string>
+    <string name="reason">Alasan</string>
+    <string name="delete">Hapus</string>
+    <string name="save">Simpan</string>
+    <string name="edit">Ubah</string>
+    <string name="add">Tambah</string>
+    <string-array name="type_transactions">
+        <string name="debit">Masuk</string>
+        <string name="kredit">Keluar</string>
+    </string-array>
+    <string-array name="source_transactions">
+        <string name="salary">Gaji</string>
+        <string name="other">Lainnya</string>
+    </string-array>
 </resources>
