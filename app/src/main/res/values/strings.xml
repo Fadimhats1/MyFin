@@ -10,12 +10,17 @@
     <string name="save">Simpan</string>
     <string name="edit">Ubah</string>
     <string name="add">Tambah</string>
+    <string name="in">IN</string>
+    <string name="out">OUT</string>
+    <string name="icon_in_out">Ikon untuk uang yang Masuk atau Keluar</string>
+    <string name="button_tambah_transaksi">Button tambah transaksi</string>
+    <string name="pilih_tanggal">Pilih Tanggal</string>
     <string-array name="type_transactions">
-        <string name="debit">Masuk</string>
-        <string name="kredit">Keluar</string>
+        <item>Masuk</item>
+        <item>Keluar</item>
     </string-array>
     <string-array name="source_transactions">
-        <string name="salary">Gaji</string>
-        <string name="other">Lainnya</string>
+        <item>Gaji</item>
+        <item>Lainnya</item>
     </string-array>
 </resources>

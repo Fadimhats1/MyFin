@@ -1,4 +1,4 @@
-package com.example.myfin.utils.enum
+package com.example.myfin.utils.enums
 
 enum class OrderBy {
     AMOUNT,

@@ -1,4 +1,4 @@
-package com.example.myfin.models
+package com.example.myfin.models.global
 
 sealed class ResponseState {
     data class Success<T>(var data: T) : ResponseState()

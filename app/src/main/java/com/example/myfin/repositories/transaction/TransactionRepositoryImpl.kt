@@ -1,62 +1,106 @@
 package com.example.myfin.repositories.transaction
 
 import android.database.sqlite.SQLiteConstraintException
-import com.example.myfin.models.Transaction
+import com.example.myfin.models.Transaction.RequestDeleteTransaction
+import com.example.myfin.models.Transaction.RequestSaveOrUpdateTransaction
+import com.example.myfin.models.Transaction.RequestSort
+import com.example.myfin.models.Transaction.ResponseDeleteTransaction
+import com.example.myfin.models.Transaction.ResponseSaveOrUpdateTransaction
+import com.example.myfin.models.Transaction.mapToEntityTransaction
+import com.example.myfin.models.database.EntityTransaction
 import com.example.myfin.models.database.TransactionDao
-import com.example.myfin.models.Sort
-import com.example.myfin.models.BaseRequest
-import com.example.myfin.models.ResponseState
-import com.example.myfin.utils.enum.OrderBy
+import com.example.myfin.models.database.mapToResponseListTransaction
+import com.example.myfin.models.global.BaseRequest
+import com.example.myfin.models.global.ResponseState
+import com.example.myfin.utils.enums.OrderBy
+import com.example.myfin.utils.enums.OrderType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.lang.Exception
 
-class TransactionRepositoryImpl(private val dao: TransactionDao): TransactionRepository {
-    override fun saveTransaction(transaction: Transaction) = flow {
+class TransactionRepositoryImpl(private val dao: TransactionDao) : TransactionRepository {
+    override fun saveTransaction(data: RequestSaveOrUpdateTransaction) = flow {
         try {
-            dao.upsertTransaction(transaction)
-            emit(ResponseState.Success(null))
-        }catch (e: SQLiteConstraintException){
+            dao.upsertTransaction(data.mapToEntityTransaction())
+            emit(
+                ResponseState.Success(
+                    ResponseSaveOrUpdateTransaction(
+                        true,
+                        if (data.id == null) "Penyimpanan data berhasil" else "Pembaruan data berhasil"
+                    )
+                )
+            )
+        } catch (e: SQLiteConstraintException) {
             emit(ResponseState.Error(e))
-        }catch (e: Exception){
+        } catch (e: Exception) {
             emit(ResponseState.Error(e))
         }
     }
 
     override fun getTransactions() = flow {
         try {
-            dao.getTransactions()
-            emit(ResponseState.Success(null))
-        } catch (e: SQLiteConstraintException){
+            val data = dao.getTransactions()
+            emit(ResponseState.Success(data.mapToResponseListTransaction()))
+        } catch (e: SQLiteConstraintException) {
             emit(ResponseState.Error(e))
-        } catch (e: Exception){
+        } catch (e: Exception) {
             emit(ResponseState.Error(e))
         }
     }
 
-    override fun sortTransaction(sort: Sort) = flow {
+    override fun sortTransactions(data: RequestSort) = flow {
         try {
-            val data: Flow<List<Transaction>> = when(sort.orderBy){
+            val dataRes: List<EntityTransaction> = when (data.orderBy) {
                 OrderBy.AMOUNT -> {
-                    dao.getTransactionsSortByAmount(sort.orderType)
+                    when (data.orderType) {
+                        OrderType.ASC ->
+                            dao.getTransactionsSortByAmountAsc()
+
+                        OrderType.DESC ->
+                            dao.getTransactionsSortByAmountDesc()
+                    }
                 }
 
                 OrderBy.DATE -> {
-                    dao.getTransactionsSortByDate(sort.orderType)
+                    when (data.orderType) {
+                        OrderType.ASC ->
+                            dao.getTransactionsSortByDateAsc()
+
+                        OrderType.DESC ->
+                            dao.getTransactionsSortByDateDesc()
+                    }
                 }
             }
-            emit(ResponseState.Success(data))
-        } catch (e: SQLiteConstraintException){
+            emit(ResponseState.Success(dataRes.mapToResponseListTransaction()))
+        } catch (e: SQLiteConstraintException) {
             emit(ResponseState.Error(e))
-        } catch (e: Exception){
+        } catch (e: Exception) {
+            emit(ResponseState.Error(e))
+        }
+    }
+
+    override fun deleteTransaction(data: RequestDeleteTransaction): Flow<ResponseState> = flow {
+        try {
+            dao.deleteTransaction(data.mapToEntityTransaction())
+            emit(
+                ResponseState.Success(
+                    ResponseDeleteTransaction(
+                        true,
+                        "Penghapusan data berhasil"
+                    )
+                )
+            )
+        } catch (e: SQLiteConstraintException) {
+            emit(ResponseState.Error(e))
+        } catch (e: Exception) {
             emit(ResponseState.Error(e))
         }
     }
 
     override fun call(request: BaseRequest?): Flow<ResponseState> {
         return when (request) {
-            is Transaction -> saveTransaction(request)
-            is Sort -> sortTransaction(request)
+            is RequestSaveOrUpdateTransaction -> saveTransaction(request)
+            is RequestSort -> sortTransactions(request)
+            is RequestDeleteTransaction -> deleteTransaction(request)
             else -> getTransactions()
         }
     }

@@ -1,7 +1,7 @@
 package com.example.myfin.repositories.global
 
-import com.example.myfin.models.BaseRequest
-import com.example.myfin.models.ResponseState
+import com.example.myfin.models.global.BaseRequest
+import com.example.myfin.models.global.ResponseState
 import kotlinx.coroutines.flow.Flow
 
 interface BaseRepository {
