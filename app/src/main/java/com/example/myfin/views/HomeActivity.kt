@@ -5,11 +5,14 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -24,13 +27,11 @@ import com.example.myfin.models.Transaction.RequestSaveOrUpdateTransaction
 import com.example.myfin.models.global.UIState
 import com.example.myfin.utils.customViews.GlobalDialog
 import com.example.myfin.utils.enums.TransactionType
-import com.example.myfin.utils.global.Converters
 import com.example.myfin.utils.global.GlobalFunction
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.time.LocalDate
 
 class HomeActivity : AppCompatActivity() {
     private val viewModel: HomeViewModel by viewModel()
@@ -58,7 +59,7 @@ class HomeActivity : AppCompatActivity() {
         }
 
         binding.fabAdd.setOnClickListener {
-            if(supportFragmentManager.findFragmentByTag("TRANSACTION_DIALOG") == null)
+            if (supportFragmentManager.findFragmentByTag("TRANSACTION_DIALOG") == null)
                 dialogTransaction.show(supportFragmentManager, "TRANSACTION_DIALOG")
         }
 
@@ -162,50 +163,104 @@ class HomeActivity : AppCompatActivity() {
                 }
 
                 etDate.setOnClickListener {
-                    Log.e("tilDate", "initDialogs: BUKA", )
-                    if(supportFragmentManager.findFragmentByTag("DATE_DIALOG") == null)
+                    Log.e("tilDate", "initDialogs: BUKA")
+                    if (supportFragmentManager.findFragmentByTag("DATE_DIALOG") == null)
                         materialDate.show(supportFragmentManager, "DATE_DIALOG")
+                }
+
+                etAmount.addTextChangedListener(object : TextWatcher {
+                    private var current = etAmount.text.toString().trim()
+
+                    override fun beforeTextChanged(
+                        s: CharSequence,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                        tilAmount.apply {
+                            error = null
+                            isErrorEnabled = false
+                            clearFocus()
+                        }
+
+                        Log.e("on_text_changed", "Current: $current \n sToString: $s", )
+                        if (s.toString() != current) {
+                            etAmount.removeTextChangedListener(this)
+
+                            val cleanString = s.toString().replace("[Rp,. ]".toRegex(), "")
+                            if (cleanString.isNotEmpty()) {
+                                current = GlobalFunction.formatCurrency(cleanString).replace("Rp. ", "")
+                                etAmount.setText(current)
+                                etAmount.setSelection(current.length)
+                            }
+
+                            etAmount.addTextChangedListener(this)
+                        }
+                    }
+
+                    override fun afterTextChanged(s: Editable) {
+                    }
+                })
+
+                etAmount.doOnTextChanged { text, start, before, count ->
+
+
                 }
 
                 btnAdd.setOnClickListener {
                     var isValid = true
-                    var message = ""
-                    if (etAmount.text.isNullOrEmpty()) {
-                        isValid = false
-                        etAmount.apply {
-                            error = "Jumlah tidak boleh kosong"
-                            requestFocus()
+
+                    when {
+                        etAmount.text.isNullOrEmpty() -> {
+                            isValid = false
+                            tilAmount.apply {
+                                error = "Jumlah tidak boleh kosong"
+                                requestFocus()
+                            }
                         }
 
-                    } else if (etDate.text.isNullOrEmpty()) {
-                        isValid = false
-                        etDate.apply {
-                            error = "Tanggal tidak boleh kosong"
-                            requestFocus()
+                        currentTransactionType == null -> {
+                            isValid = false
+                            tilType.apply {
+                                error = "Tipe transaksi tidak boleh kosong"
+                                requestFocus()
+                            }
                         }
-                    } else if (currentTransactionType == null) {
-                        isValid = false
-                        spType.apply{
-                            error = "Tipe transaksi tidak boleh kosong"
-                            requestFocus()
+
+                        etDate.text.isNullOrEmpty() -> {
+                            isValid = false
+                            tilDate.apply {
+                                error = "Tanggal tidak boleh kosong"
+                                requestFocus()
+                            }
                         }
-                    } else if (currentSource == null) {
-                        isValid = false
-                        spSource.apply{
-                            error = "Sumber tidak boleh kosong"
-                            requestFocus()
+
+                        currentSource == null -> {
+                            isValid = false
+                            tilSource.apply {
+                                error = "Sumber tidak boleh kosong"
+                                requestFocus()
+                            }
                         }
                     }
 
+                    // Save or update transaction if valid
                     if (isValid) {
                         val payload = RequestSaveOrUpdateTransaction(
-                            etAmount.text.toString().toLong(),
+                            etAmount.text.toString().replace("[Rp,. ]".toRegex(), "").toLong(),
                             currentSource!!,
                             GlobalFunction.formatStringToLocalDate(etDate.text.toString()),
-                            etReason.text.toString(),
+                            etReason.text?.toString() ?: "",
                             currentTransactionType!!
                         )
-
                         viewModel.saveOrUpdateTransaction(payload)
                     }
                 }

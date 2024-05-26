@@ -32,6 +32,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:hint="@string/amount"
+                app:prefixText="Rp. "
                 android:textSize="16sp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -48,14 +49,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:hint="@string/type"
-                android:textSize="16sp">
+                android:textSize="16sp"
+                app:boxStrokeColor="@color/m3_textfield_stroke_color"
+                app:errorEnabled="false">
 
                 <AutoCompleteTextView
                     android:id="@+id/sp_type"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    tools:ignore="LabelFor" />
+                    tools:ignore="LabelFor,SpeakableTextPresentCheck" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -70,7 +73,13 @@
                     android:id="@+id/et_date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:editable="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:focusedByDefault="false"
+                    android:inputType="none"
+                    android:linksClickable="false"
+                    android:longClickable="false" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -80,14 +89,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:hint="@string/source"
-                android:textSize="16sp">
+                android:textSize="16sp"
+                app:boxStrokeColor="@color/m3_textfield_stroke_color">
 
                 <AutoCompleteTextView
                     android:id="@+id/sp_source"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    tools:ignore="LabelFor" />
+                    tools:ignore="LabelFor,SpeakableTextPresentCheck" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
